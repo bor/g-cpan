@@ -51,13 +51,19 @@ sub getEnv {
         '/usr/share/portage/config/make.globals' )
     {
         if ( -f $file ) {
-            my $importer = Shell::EnvImporter->new(
-                file          => $file,
-                shell         => 'bash',
-                import_filter => $filter,
-            );
-            $importer->shellobj->envcmd('set');
-            $importer->run();
+            my $importer;
+            {
+                # dirty hack for perl 5.18 (at least)
+                # disable warnings like 'Use of uninitialized value $_[1] in read at IO/Handle.pm line 463'
+                local $^W;
+                $importer = Shell::EnvImporter->new(
+                    file          => $file,
+                    shell         => 'bash',
+                    import_filter => $filter,
+                );
+                $importer->shellobj->envcmd('set');
+                $importer->run();
+            };
             if ( defined( $ENV{$envvar} ) && ( $ENV{$envvar} =~ m{\W*} ) ) {
                 my $tm = strip_env( $ENV{$envvar} );
                 $importer->restore_env;
@@ -304,15 +310,20 @@ sub read_ebuild {
     my $self = shift;
     my ( $find_ebuild, $portdir, $tc, $tp, $file ) = @_;
     my $e_file = "$portdir/$tc/$tp/$file";
-    # Grab some info for display
-    my $e_import = Shell::EnvImporter->new(
-        file        => $e_file,
-        shell       => 'bash',
-        auto_run    => 1,
-        auto_import => 1,
-    );
-    $e_import->shellobj->envcmd('set');
-    $e_import->run();
+    my $e_import;
+    {
+        # dirty hack for perl 5.18 (at least)
+        # disable warnings like 'Use of uninitialized value $_[1] in read at IO/Handle.pm line 463'
+        local $^W;
+        $e_import = Shell::EnvImporter->new(
+            file        => $e_file,
+            shell       => 'bash',
+            auto_run    => 1,
+            auto_import => 1,
+        );
+        $e_import->shellobj->envcmd('set');
+        $e_import->run();
+    }
     $e_import->env_import();
     $self->{'portage'}{ lc($find_ebuild) }{'DESCRIPTION'} = strip_env( $ENV{DESCRIPTION} );
     $self->{'portage'}{ lc($find_ebuild) }{'HOMEPAGE'}    = strip_env( $ENV{HOMEPAGE} );
