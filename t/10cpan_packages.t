@@ -19,7 +19,7 @@ elsif ( $needs_cpan_stub and not _init_cpan_config() ) {
     plan skip_all => 'Tests impossible without a configured CPAN::Config';
 }
 else {
-    plan tests => 5;
+    plan tests => 9;
 }
 
 use_ok('Gentoo');
@@ -37,6 +37,16 @@ subtest "retrieve and check information for $module", sub {
     ok( $GC->{cpan}{$module_lc}{name},        'has a name' );
     ok( $GC->{cpan}{$module_lc}{src_uri},     'has src_uri' );
     ok( $GC->{cpan}{$module_lc}{description}, 'has a description' );
+};
+
+# module description: turn "407" into "four hundred and seven", etc.
+$module = 'Lingua::EN::Numbers';
+subtest "retrieve and check information for $module", sub {
+    $GC->getCPANInfo($module);
+    my $module_lc = lc($module);
+    ok( $GC->{cpan}{$module_lc}, 'obtain information by getCPANInfo()' );
+    is( $GC->{cpan}{$module_lc}{name}, $module, 'name is correct' );
+    like( $GC->{cpan}{$module_lc}{description}, qr/\\".+\\"/, 'description should be with escaped quotes' );
 };
 
 sub _init_cpan_config {
