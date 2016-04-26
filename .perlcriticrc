@@ -1,0 +1,6 @@
+severity = 5
+
+[ValuesAndExpressions::ProhibitImplicitNewlines]
+severity = 1
+[ValuesAndExpressions::ProhibitVersionStrings]
+severity = 1
