@@ -19,6 +19,7 @@ t/11_App_gcpan.t
 t/98_changes.t
 t/98_eol.t
 t/98_manifest.t
+t/98_perlcritic.t
 t/98_pod_spelling.t
 t/98_pod_syntax.t
 t/data/etc/portage/make.conf
