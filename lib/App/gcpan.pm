@@ -6,19 +6,18 @@ use warnings;
 use Carp;
 use Cwd qw( cwd );
 use DirHandle;
-use File::Spec;
-use File::Path;
 use File::Basename;
 use File::Copy;
+use File::Path;
+use File::Spec;
+use Gentoo;
+use Gentoo::UI::Console;
 use Getopt::Long;
 use IO::File;
 use Log::Agent;
 use Log::Agent::Driver::File;
 use Log::Agent::Driver::Silent;
 use Term::ANSIColor;
-
-use Gentoo;
-use Gentoo::UI::Console;
 
 Getopt::Long::Configure('bundling');
 
