@@ -1,6 +1,7 @@
 bin/g-cpan
 ChangeLog
 Changes
+lib/App/gcpan.pm
 lib/Gentoo.pm
 lib/Gentoo/CPAN.pm
 lib/Gentoo/Portage.pm
