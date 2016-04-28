@@ -1,5 +1,4 @@
-#!/usr/bin/perl -w
-package main;
+package App::gcpan;
 
 use strict;
 use warnings;
@@ -51,6 +50,14 @@ my $green = color("bold green");
 my $white = color("bold white");
 my $cyan  = color("bold cyan");
 my $reset = color("reset");
+
+# declare some variables (need to rework to avoid them in the future)
+my ( $GCPAN_CAT, $GCPAN_OVERLAY );
+my ( $gcpan_run, $keywords, $overlay );
+my %passed_to_install;    # containing the original values passed for installing
+my %really_install;       # will contain the portage friendly version of the values passed to install
+
+sub run {
 
 #Get & Parse them
 GetOptions(
@@ -107,14 +114,8 @@ if (!$install && defined($ask))
     $install = 1;
 }
 
-# Array containing the original values passed for installing
-my %passed_to_install;
-
 @ARGV > 0
   and %passed_to_install = map { $_ => 1 } @ARGV;
-
-# Array that will contain the portage friendly version of the values passed to install
-my %really_install;
 
 # Output error if more than one main switch is activated
 #
@@ -200,18 +201,18 @@ use CPAN;
 # main() #
 ##########
 
-my $gcpan_run = Gentoo->new(
+$gcpan_run = Gentoo->new(
     'cpan_reload' => $cpan_reload,
     'DEBUG'       => $debug,
 );
 
 # Grab some configuration options for g-cpan
-my $GCPAN_CAT = $gcpan_run->getEnv('GCPAN_CAT');
+$GCPAN_CAT = $gcpan_run->getEnv('GCPAN_CAT');
 $GCPAN_CAT = 'perl-gcpan' unless defined($GCPAN_CAT) and length($GCPAN_CAT) > 0;
 # Push back to the env so we can use during cleanup
 $ENV{GCPAN_CAT} = $GCPAN_CAT;
 
-my $GCPAN_OVERLAY = $gcpan_run->getEnv('GCPAN_OVERLAY') || 0;
+$GCPAN_OVERLAY = $gcpan_run->getEnv('GCPAN_OVERLAY') || 0;
 # Ensure it's in the category list
 if(length(grep {/$GCPAN_CAT/} @perl_dirs) == 0) {
 	push @perl_dirs, $GCPAN_CAT;
@@ -284,7 +285,7 @@ my $PORTAGE_DIR = $gcpan_run->getEnv('PORTDIR');
 $gcpan_run->{portage_bases}{$PORTAGE_DIR} = 1;
 
 # Grab the keywords - we'll need these when we build the ebuild
-my $keywords = $gcpan_run->getEnv('ACCEPT_KEYWORDS');
+$keywords = $gcpan_run->getEnv('ACCEPT_KEYWORDS');
 if ($keywords =~ m{ACCEPT_KEYWORDS}) { $keywords="" }
 $keywords ||= do
 {
@@ -321,7 +322,7 @@ if (   $generate
 }
 
 # Get the overlays
-my $overlay = $gcpan_run->getEnv('PORTDIR_OVERLAY');
+$overlay = $gcpan_run->getEnv('PORTDIR_OVERLAY');
 if ($overlay)
 {
     if ($overlay =~ m{\S*\s+\S*}x)
@@ -492,6 +493,9 @@ if (($install || $pretend || $buildpkg || $buildpkgonly || $upgrade || $ask)
         }
     }
 }
+
+}
+
 
 sub generatePackageInfo
 {
@@ -1063,9 +1067,7 @@ USAGE
     exit;
 }
 
-exit;
-
-##############
+1;
 
 __END__
 
