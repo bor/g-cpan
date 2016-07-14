@@ -23,7 +23,7 @@ before_script:
 after_success:
     - cpanm Devel::Cover::Report::Coveralls
     - cover -test -report coveralls
-#notifications:
-#    irc: "chat.freenode.net#gentoo-perl"
-#    on_success: change
-#    on_failure: always
+notifications:
+    irc: "chat.freenode.net#gentoo-perl"
+    on_success: change
+    on_failure: always
