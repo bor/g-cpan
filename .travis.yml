@@ -12,13 +12,18 @@ addons:
         packages:
             - aspell
             - aspell-en
+            - python-lxml
 before_script:
     - sudo mkdir -p /etc/portage /usr/portage /usr/local/portage /usr/share/portage/config
     - sudo chown $USER:$USER /etc/portage /usr/portage /usr/local/portage /usr/share/portage/config
     - cp t/data/make.conf /etc/portage/make.conf
     - wget "https://raw.githubusercontent.com/gentoo/portage/master/cnf/make.globals" -O /usr/share/portage/config/make.globals
-    - wget "http://distfiles.gentoo.org/snapshots/portage-latest.tar.xz" -O /tmp/portage-latest.tar.xz
-    - tar xJf /tmp/portage-latest.tar.xz -C /usr/
+    - wget "https://github.com/gentoo/portage/archive/master.tar.gz" -O /tmp/portage-latest.tar.gz
+    - wget "http://distfiles.gentoo.org/snapshots/portage-latest.tar.xz" -O /tmp/portage-tree-latest.tar.xz
+    - tar xzf /tmp/portage-latest.tar.gz -C /tmp
+    - tar xJf /tmp/portage-tree-latest.tar.xz -C /usr/
+    - sudo cp /tmp/portage-master/cnf/repos.conf /etc/portage/
+    - pushd -n /tmp/portage-master /tmp/portage-master/bin
     - cpanm Test::CPAN::Changes Test::CheckManifest Test::EOL Test::Spelling    # DEV_TESTING dependency
 after_success:
     - cpanm Devel::Cover::Report::Coveralls
