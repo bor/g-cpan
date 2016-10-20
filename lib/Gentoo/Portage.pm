@@ -132,6 +132,7 @@ sub getAvailableEbuilds {
         }
     }
 
+    return $self->{packagelist};
 }
 
 # Returns version of an ebuild. (Without -rX string etc.)
@@ -363,11 +364,11 @@ information.
 
 =over 4
 
-=item $obj->getAvailableEbuilds($portdir, $package);
+=item getAvailableEbuilds($portdir, $package)
 
 Providing the C<PORTDIR> you want to investigate, and either the name of the
-category or the category/package you are interested, this will populate an
-array in $obj->{packagelist} of the available ebuilds.
+category or the category/package you are interested.
+Return arrayref with a list of available ebuilds.
 
 =item $obj->getAvailableVersions($portdir,[$ebuildname])
 
