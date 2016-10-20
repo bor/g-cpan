@@ -125,17 +125,13 @@ sub getBestVersion {
     my $ebuilds = $self->getAvailableEbuilds( $portdir, "$tc/$tp" )
       or return;
 
-    foreach ( @$ebuilds ) {
-                    my @tmp_availableVersions = ();
-                    push( @tmp_availableVersions, getEbuildVersionSpecial($_) );
+    my %ebuild_versions = map { getEbuildVersionSpecial($_) => $_ } @$ebuilds;
+    my $highest_version = ( sort keys %ebuild_versions )[-1];
 
-                    # - get highest version >
-                    if ( $#tmp_availableVersions > -1 ) {
-                        $self->{'portage'}{ lc($find_ebuild) }{'version'} =
-                          ( sort(@tmp_availableVersions) )
-                          [$#tmp_availableVersions];
+    read_ebuild( $self, $find_ebuild, $portdir, $tc, $tp, $ebuild_versions{$highest_version} );
 
-                        read_ebuild($self,$find_ebuild,$portdir,$tc,$tp,$_);
+    $self->{portage}{ lc($find_ebuild) }{version} = $highest_version;
+
                         # - get rid of -rX >
                         $self->{'portage'}{ lc($find_ebuild) }{'version'} =~
                           s/([a-zA-Z0-9\-_\/]+)-r[0-9+]/$1/;
@@ -180,9 +176,6 @@ sub getBestVersion {
                             $self->{'portage'}{ lc($find_ebuild) }{'category'} =
                               $tc;
                         }
-
-                    }
-    }
 
     return 1;
 }
