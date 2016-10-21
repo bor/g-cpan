@@ -5,6 +5,7 @@ lib/App/gcpan.pm
 lib/Gentoo.pm
 lib/Gentoo/CPAN.pm
 lib/Gentoo/Portage.pm
+lib/Gentoo/Portage/Ebuild.pm
 lib/Gentoo/Portage/Q.pm
 lib/Gentoo/UI/Console.pm
 Makefile.PL
@@ -12,6 +13,7 @@ MANIFEST			This list of files
 README.md
 t/00_Gentoo.t
 t/01_Gentoo_Portage_Q.t
+t/02_Gentoo_Portage_Ebuild.t
 t/05_Gentoo_Portage.t
 t/06_Gentoo_CPAN.t
 t/11_App_gcpan.t
