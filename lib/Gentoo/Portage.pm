@@ -130,25 +130,16 @@ sub getBestVersion {
 
     read_ebuild( $self, $find_ebuild, $portdir, $tc, $tp, $ebuild_versions{$highest_version} );
 
+    # get rid of -rX, _alphaX and other similar stuff
+    $highest_version =~ s/([a-zA-Z0-9\-_\/]+)-r[0-9+]/$1/;
+    $highest_version =~ s/([a-zA-Z0-9\-_\/]+)-rc[0-9+]/$1/;
+    $highest_version =~ s/([a-zA-Z0-9\-_\/]+)_p[0-9+]/$1/;
+    $highest_version =~ s/([a-zA-Z0-9\-_\/]+)_pre[0-9+]/$1/;
+    $highest_version =~ s/([a-zA-Z0-9\-_\/]+)_alpha[0-9+]?/$1/;
+    $highest_version =~ s/([a-zA-Z0-9\-_\/]+)_beta[0-9+]?/$1/;
+    $highest_version =~ s/[a-zA-Z]+$//;
+
     $self->{portage}{ lc($find_ebuild) }{version} = $highest_version;
-
-                        # - get rid of -rX >
-                        $self->{'portage'}{ lc($find_ebuild) }{'version'} =~
-                          s/([a-zA-Z0-9\-_\/]+)-r[0-9+]/$1/;
-                        $self->{'portage'}{ lc($find_ebuild) }{'version'} =~
-                          s/([a-zA-Z0-9\-_\/]+)-rc[0-9+]/$1/;
-                        $self->{'portage'}{ lc($find_ebuild) }{'version'} =~
-                          s/([a-zA-Z0-9\-_\/]+)_p[0-9+]/$1/;
-                        $self->{'portage'}{ lc($find_ebuild) }{'version'} =~
-                          s/([a-zA-Z0-9\-_\/]+)_pre[0-9+]/$1/;
-
-                        # - get rid of other stuff we don't want >
-                        $self->{'portage'}{ lc($find_ebuild) }{'version'} =~
-                          s/([a-zA-Z0-9\-_\/]+)_alpha[0-9+]?/$1/;
-                        $self->{'portage'}{ lc($find_ebuild) }{'version'} =~
-                          s/([a-zA-Z0-9\-_\/]+)_beta[0-9+]?/$1/;
-                        $self->{'portage'}{ lc($find_ebuild) }{'version'} =~
-                          s/[a-zA-Z]+$//;
 
                         if ( $tc eq "perl-core"
                             and ( keys %{ $self->{'portage_bases'} } ) )
