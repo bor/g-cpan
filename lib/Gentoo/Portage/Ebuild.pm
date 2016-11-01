@@ -21,6 +21,9 @@ use warnings;
 
 our $VERSION = '0.001';
 
+use Gentoo::Portage::Q;
+use Path::Tiny;
+
 =head1 METHODS
 
 =head2 new()
@@ -32,6 +35,61 @@ Returns a new C<Gentoo::Portage::Ebuild> object.
 sub new {
     my $class = shift;
     return bless {}, $class;
+}
+
+sub read {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
+    my ( $class, $ebuild_file ) = @_;
+
+    return unless -e $ebuild_file;
+
+    my $self = bless {}, $class;
+
+    my $portageq = Gentoo::Portage::Q->new();
+    my $gentoo_repo_path = $portageq->get_repo_path( $portageq->envvar('EROOT'), 'gentoo' );
+
+    my @ebuild;
+    for my $l ( path($ebuild_file)->lines() ) {
+        if ( $l =~ /^inherit (.+)$/ ) {
+            my @eclasses = split( / /, $1 );
+            push @ebuild, path( $gentoo_repo_path, 'eclass', "$_.eclass" )->lines() for @eclasses;
+        }
+        else {
+            push @ebuild, $l;
+        }
+    }
+
+    my $ebuild_file_full = Path::Tiny->tempfile();
+    $ebuild_file_full->spew_raw( \@ebuild );
+
+    my %ebuild;
+    open( my $h, '-|', "bash -norc -noprofile -c '. $ebuild_file_full; set'" ) or die "Can't run bash command: $!";
+    while ( defined( my $l = <$h> ) ) {
+        # skip already defined ENV vars, since we want only ebuild env
+        if ( $l =~ /^(\w+)=(.*?)$/ and not defined $ENV{$1} ) {
+            $ebuild{$1} = _strip_env_var($2);
+        }
+    }
+    close $h;
+
+    $self->{HOMEPAGE}    = $ebuild{HOMEPAGE};
+    $self->{DESCRIPTION} = $ebuild{DESCRIPTION};
+
+    return $self;
+}
+
+
+# helpers
+
+sub _strip_env_var {
+    my $var = shift;
+    $var =~ s/\\n|\\t/ /g;
+    $var =~ s/\s+/ /g;
+    $var =~ s/^\$//g;
+    $var =~ s/^'//g;
+    $var =~ s/'$//g;
+    $var =~ s/^\s//;
+    $var =~ s/\s$//;
+    return $var;
 }
 
 1;
