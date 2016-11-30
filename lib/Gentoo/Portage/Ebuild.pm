@@ -77,6 +77,17 @@ sub read {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     return $self;
 }
 
+sub write {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
+    my ( $self, $ebuild_file ) = @_;
+
+    return unless $ebuild_file and -e $ebuild_file;
+
+    my $ebuild_path = Path::Tiny->new($ebuild_file);
+    #$ebuild_path->spew();
+
+    return 1;
+}
+
 
 # helpers
 
