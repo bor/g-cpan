@@ -60,8 +60,10 @@ sub envvar {
     return $ENV{$var} if defined $ENV{$var};    # prefer to use custom from ENV
 
     unless ( $self->{_portage_env} ) {
-        $self->{_portage_env} = $self->_read_portage_env();
-        $self->{_portage_env}{EROOT} ||= '/';    # hardcoded, need to change to support Gentoo Prefix Project
+        # is it good enough?
+        my $eroot = $ENV{EPREFIX} ? File::Spec->catdir( ( $ENV{ROOT} || '/' ), $ENV{EPREFIX} ) : $ENV{ROOT} || '/';
+        $self->{_portage_env} = $self->_read_portage_env($eroot);
+        $self->{_portage_env}{EROOT} ||= $eroot;
     }
 
     return $self->{_portage_env}{$var};
@@ -134,7 +136,7 @@ sub _load_repos {
 
 # manage list of portage env settings files (see man make.conf)
 sub _portage_env_files {
-    my $self = shift;
+    my ( $self, $eroot ) = @_;
 
     unless ( $self->{_portage_env_files} ) {
         my @_make_profile = @make_profile;    # avoid to override the global var
@@ -155,12 +157,13 @@ sub _portage_env_files {
             }
         }
 
-        for my $path (@portage_settings) {
-            if ( -d $path ) {
-                push @{ $self->{_portage_env_files} }, sort map { "$_" } path($path)->children();
+        for (@portage_settings) {
+            my $path = path( $eroot, $_ );
+            if ( $path->is_dir ) {
+                push @{ $self->{_portage_env_files} }, sort map { "$_" } $path->children();
             }
-            elsif ( -e $path ) {
-                push @{ $self->{_portage_env_files} }, $path;
+            elsif ( $path->is_file ) {
+                push @{ $self->{_portage_env_files} }, "$path";
             }
         }
     }
@@ -170,10 +173,11 @@ sub _portage_env_files {
 
 # execute each portage env settings file and collect all env settings from them
 sub _read_portage_env {
-    my $self = shift;
+    my ( $self, $eroot ) = @_;
     my %portage_env;
 
-    for my $file ( @{ $self->_portage_env_files } ) {
+    for my $file ( @{ $self->_portage_env_files($eroot) } ) {
+        $file = File::Spec->catfile( $eroot, $file );
         open( my $h, '-|', "bash -norc -noprofile -c '. $file; set'" ) or die "Can't run bash command: $!";
         while ( defined( my $l = <$h> ) ) {
             # skip already defined ENV vars, since we want only portage env
