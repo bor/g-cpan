@@ -4,11 +4,12 @@ use lib 'lib';
 use strict;
 use warnings;
 
-use Test::More;
+use Test::More tests => 5;
 
 use_ok('Gentoo::Portage::Q');
 
 my $portageq = new_ok('Gentoo::Portage::Q');
+my $portageq_real;
 
 subtest 'envvar($variable)', sub {
     is( $portageq->envvar('EROOT'), '/', 'EROOT' );
@@ -18,9 +19,10 @@ subtest 'envvar($variable)', sub {
 
     subtest 'real Gentoo Linux', sub {
         plan skip_all => 'nope' unless -e '/etc/gentoo-release';
-        like( $portageq->envvar('ARCH'),            qr/^~?[\w\-]+$/, 'ARCH' );
-        like( $portageq->envvar('ACCEPT_KEYWORDS'), qr/^~?[\w\-]+$/, 'ACCEPT_KEYWORDS' );
-        ok( $portageq->envvar('MAKEOPTS'), 'MAKEOPTS' );
+        $portageq_real = new_ok('Gentoo::Portage::Q');
+        like( $portageq_real->envvar('ARCH'),            qr/^~?[\w\-]+$/, 'ARCH' );
+        like( $portageq_real->envvar('ACCEPT_KEYWORDS'), qr/^~?[\w\-]+$/, 'ACCEPT_KEYWORDS' );
+        ok( $portageq_real->envvar('MAKEOPTS'), 'MAKEOPTS' );
     };
 };
 
@@ -31,9 +33,9 @@ subtest 'get_repo_path( $eroot, $repo_id )', sub {
     is( $portageq->get_repo_path( $eroot, 'bogus' ),  undef,                "trying for ('$eroot','bogus')" );
 
     subtest 'real Gentoo Linux', sub {
-        plan skip_all => 'nope' unless -e '/etc/gentoo-release';
+        plan skip_all => 'nope' unless $portageq_real;
         $eroot = '/';
-        is( $portageq->get_repo_path( $eroot, 'gentoo' ), '/usr/portage', "trying for ('$eroot','gentoo')" );
+        is( $portageq_real->get_repo_path( $eroot, 'gentoo' ), '/usr/portage', "trying for ('$eroot','gentoo')" );
     };
 };
 
@@ -41,5 +43,3 @@ subtest 'get_repos($eroot)', sub {
     my $eroot = 't/data';
     is_deeply( $portageq->get_repos($eroot), [ 'local', 'gentoo' ], "trying for ('$eroot')" );
 };
-
-done_testing();
