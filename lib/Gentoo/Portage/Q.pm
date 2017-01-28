@@ -122,6 +122,22 @@ sub _load_repos {
     my ( $self, $eroot ) = @_;
     my %repos;
 
+    # first of all we look at PORTDIR_OVERLAY and grab sources from it
+    for my $overlay_dir ( split / /, $self->envvar('PORTDIR_OVERLAY') ) {
+        next unless -d $overlay_dir;
+        my $overlay = path($overlay_dir);
+        next unless $overlay->child( 'metadata', 'layout.conf' )->exists;
+        my $repo_name = $overlay->child( 'profiles', 'repo_name' );
+        if ( $repo_name->exists ) {
+            $repos{ 'x-' . $repo_name->slurp } = {};
+        }
+        else {
+            $repos{ 'x-' . $overlay->basename } = {};
+        }
+    }
+    use DDP;
+    p %repos;
+
     for my $file ( path( $eroot, 'etc', 'portage', 'repos.conf' )->children(qr/\.conf$/) ) {
         if ( -e $file ) {
             my $conf = Config::Tiny->read($file);

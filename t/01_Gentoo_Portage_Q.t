@@ -50,4 +50,12 @@ subtest 'get_repo_path( $eroot, $repo_id )', sub {
 subtest 'get_repos($eroot)', sub {
     my $eroot = 't/data';
     is_deeply( $portageq->get_repos($eroot), [ 'local', 'gentoo' ], "trying for ('$eroot')" );
+    {
+        #local $ENV{PORTDIR_OVERLAY} = '/home/bor/tmp/test';
+        #is_deeply(
+        #    $portageq->get_repos($eroot),
+        #    [ 'local', 'x-test' ],
+        #    "trying for ('$eroot') but redefine PORTDIR_OVERLAY"
+        #);
+    };
 };
